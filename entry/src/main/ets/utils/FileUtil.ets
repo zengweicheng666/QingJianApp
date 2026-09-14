@@ -13,17 +13,19 @@ export class FileUtil {
     const dot = uri.lastIndexOf('.');
     const ext = dot >= 0 ? uri.substring(dot + 1) : 'mp4';
     const dest = `${getContext().filesDir}/media_${Date.now()}_${index}.${ext}`;
-    const srcFd = fs.openSync(uri, fs.OpenMode.READ_ONLY);
-    const dstFd = fs.openSync(dest, fs.OpenMode.READ_WRITE | fs.OpenMode.CREATE | fs.OpenMode.TRUNC);
+    const srcFile: fs.File = fs.openSync(uri, fs.OpenMode.READ_ONLY);
+    const dstFile: fs.File = fs.openSync(dest, fs.OpenMode.READ_WRITE | fs.OpenMode.CREATE | fs.OpenMode.TRUNC);
+    const srcFd = srcFile.fd;
+    const dstFd = dstFile.fd;
     const buf = new ArrayBuffer(1 << 20); // 1MB 缓冲
     let offset = 0;
     try {
       while (true) {
-        const read = fs.readSync(srcFd, buf, { position: offset });
+        const read = fs.readSync(srcFd, buf, { offset: offset });
         if (read <= 0) {
           break;
         }
-        fs.writeSync(dstFd, buf, { position: offset, length: read });
+        fs.writeSync(dstFd, buf, { offset: offset, length: read });
         offset += read;
       }
     } finally {

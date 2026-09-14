@@ -9,7 +9,7 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 const TAG = 'QingJian';
 
 /**
- * 相机生命周期封装（D1-D2）：
+ * 相机生命周期封装（API 26 / DevEco 26.0.0）：
  * 预览 / 录像（AVRecorder 落盘 mp4）/ 拍照（ImageReceiver 取 JPEG 保存沙箱）/ 前后切换 / 闪光灯 / 释放
  * 使用前必须先完成权限申请（PermissionUtil）。
  */
@@ -78,16 +78,19 @@ export class CameraService {
     // 4. 录像输出（AVRecorder surface）—— 失败不影响预览
     this.avRecorder = await media.createAVRecorder();
     this.videoFilePath = `${this.context.filesDir}/qingjian_rec_${Date.now()}.mp4`;
-    this.videoFd = fs.openSync(this.videoFilePath, fs.OpenMode.READ_WRITE | fs.OpenMode.CREATE | fs.OpenMode.TRUNC);
-    const videoProfile: camera.Profile = capability.videoProfiles[0];
+    const videoFile: fs.File = fs.openSync(this.videoFilePath,
+      fs.OpenMode.READ_WRITE | fs.OpenMode.CREATE | fs.OpenMode.TRUNC);
+    this.videoFd = videoFile.fd;
+    const videoProfile: camera.VideoProfile = capability.videoProfiles[0];
     const avConfig: media.AVRecorderConfig = {
       audioSourceType: media.AudioSourceType.AUDIO_SOURCE_TYPE_MIC,
-      videoSourceType: media.VideoSourceType.VIDEO_SOURCE_TYPE_SURFACE,
+      videoSourceType: media.VideoSourceType.VIDEO_SOURCE_TYPE_SURFACE_ES,
       profile: {
         audioBitrate: 96000,
         audioChannels: 2,
         audioCodec: media.CodecMimeType.AUDIO_AAC,
         audioSampleRate: 48000,
+        fileFormat: media.ContainerFormatType.CFT_MPEG_4,
         videoBitrate: 8000000,
         videoCodec: media.CodecMimeType.VIDEO_AVC,
         videoFrameWidth: videoProfile.size.width,
@@ -99,19 +102,21 @@ export class CameraService {
       location: undefined
     };
     await this.avRecorder.prepare(avConfig);
-    this.videoOutput = this.cameraManager.createVideoOutput(videoProfile, this.avRecorder.getInputSurface());
+    const inputSurface: string = await this.avRecorder.getInputSurface();
+    this.videoOutput = this.cameraManager.createVideoOutput(videoProfile, inputSurface);
 
     // 5. 拍照输出（ImageReceiver 接收 JPEG，不占预览 surface）
-    this.imageReceiver = image.createImageReceiver(videoProfile.size.width, videoProfile.size.height, image.ImageFormat.JPEG, 2);
-    this.photoOutput = this.cameraManager.createPhotoOutput(capability.photoProfiles[0],
-      this.imageReceiver.getReceivingSurfaceId());
+    this.imageReceiver = image.createImageReceiver(videoProfile.size.width, videoProfile.size.height,
+      image.ImageFormat.JPEG, 2);
+    const photoSurface: string = await this.imageReceiver.getReceivingSurfaceId();
+    this.photoOutput = this.cameraManager.createPhotoOutput(capability.photoProfiles[0], photoSurface);
 
-    // 6. 会话组装
-    this.session = this.cameraManager.createSession(camera.SceneMode.NORMAL_PHOTO);
+    // 6. 会话组装（API 26 统一 addOutput；CaptureSession 提供闪光灯等能力）
+    this.session = this.cameraManager.createCaptureSession();
     this.session.addInput(this.cameraInput);
-    this.session.addPreviewOutput(this.previewOutput);
-    this.session.addVideoOutput(this.videoOutput);
-    this.session.addPhotoOutput(this.photoOutput);
+    this.session.addOutput(this.previewOutput);
+    this.session.addOutput(this.videoOutput);
+    this.session.addOutput(this.photoOutput);
     await this.session.commitConfig();
     await this.session.start();
 
@@ -160,17 +165,15 @@ export class CameraService {
     }
     try {
       await this.photoOutput.capture();
-      const image = await this.imageReceiver.readNextImage();
-      const component = image.getComponent(image.ComponentType.JPEG);
-      if (component === undefined || component.byteBuffer === undefined) {
-        image.release();
-        return '';
-      }
+      const img: image.Image = await this.imageReceiver.readNextImage();
+      const component: image.Component = await img.getComponent(image.ComponentType.JPEG);
+      const buffer: ArrayBuffer = component.byteBuffer;
       const outPath = `${this.context.filesDir}/qingjian_photo_${Date.now()}.jpg`;
-      const fd = fs.openSync(outPath, fs.OpenMode.READ_WRITE | fs.OpenMode.CREATE | fs.OpenMode.TRUNC);
-      fs.writeSync(fd, component.byteBuffer);
-      fs.closeSync(fd);
-      image.release();
+      const outFile: fs.File = fs.openSync(outPath,
+        fs.OpenMode.READ_WRITE | fs.OpenMode.CREATE | fs.OpenMode.TRUNC);
+      fs.writeSync(outFile.fd, buffer);
+      fs.closeSync(outFile.fd);
+      await img.release();
       return outPath;
     } catch (err) {
       const e = err as BusinessError;

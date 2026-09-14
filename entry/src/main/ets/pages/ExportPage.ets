@@ -173,9 +173,14 @@ struct ExportPage {
       .justifyContent(FlexAlign.Center)
 
       if (this.mode !== 'compress') {
-        Checkbox('压缩导出（默认裁剪）')
-          .select(this.useCompress)
-          .onChange((checked: boolean) => this.useCompress = checked)
+        Row({ space: 8 }) {
+          Checkbox({ name: 'useCompress', group: 'exportGroup' })
+            .select(this.useCompress)
+            .onChange((checked: boolean) => this.useCompress = checked)
+          Text('压缩导出（默认裁剪）')
+            .fontSize(14)
+        }
+        .justifyContent(FlexAlign.Center)
       }
 
       Progress({ value: this.progress, total: 100, type: ProgressType.Linear })

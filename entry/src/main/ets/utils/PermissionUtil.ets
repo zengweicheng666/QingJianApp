@@ -1,5 +1,7 @@
-import { abilityAccessCtrl, common, Permissions, BusinessError } from '@kit.AbilityKit';
+import { abilityAccessCtrl, common } from '@kit.AbilityKit';
+import { BusinessError } from '@kit.BasicServicesKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
+import { Permissions } from '@kit.AbilityKit';
 
 const TAG = 'QingJian';
 

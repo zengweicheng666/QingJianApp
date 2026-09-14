@@ -1,133 +1,220 @@
-import { FFmpegKit, ReturnCode } from '@ohos/ffmpeg-kit';
-import { fileIo as fs } from '@kit.CoreFileKit';
+import {
+  ffmpegSession,
+  asyncFFmpegSessionExecute,
+  enableFFmpegSessionCompleteCallback,
+  abstractSessionGetReturnCode,
+  abstractSessionGetAllLogsAsString,
+  getFFmpegVersion
+} from '@ohos/ffmpeg-kit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
 const TAG = 'QingJian';
 
 export type CompressPreset = '480p' | '720p' | '1080p';
 
-const PRESET_MAP: Record<CompressPreset, { width: number; height: number; bitrate: string }> = {
+export interface CompressPresetSpec {
+  width: number;
+  height: number;
+  bitrate: string;
+}
+
+const PRESET_MAP: Record<CompressPreset, CompressPresetSpec> = {
   '480p': { width: 854, height: 480, bitrate: '800k' },
   '720p': { width: 1280, height: 720, bitrate: '2M' },
   '1080p': { width: 1920, height: 1080, bitrate: '4M' }
 };
 
-export type ProgressCallback = (percent: number) => void;
+export type ProgressCallback = (progressSeconds: number) => void;
 
 /**
- * 视频处理封装（D3 已接入 @ohos/ffmpeg-kit）：
- * - 安装：在 entry 目录执行 `ohpm install @ohos/ffmpeg-kit`
- * - 进度：通过 ffmpeg 的 stderr 日志解析 `time=HH:MM:SS.xx` 推算百分比；
- *   若视频时长未知（无 duration），进度回调为 0~100 的估算值。
+ * 视频处理器：基于 @ohos/ffmpeg-kit（1.0.1）的裁剪/压缩/拼接/倍速封装。
+ * API：ffmpegSession(args) 创建会话 → asyncFFmpegSessionExecute 异步执行 →
+ *      完成回调里用 abstractSessionGetReturnCode 判断结果，日志轮询解析 time= 进度。
+ * 注意：MVP 串行调用（同一时间只跑一个转码任务）。
  */
 export class VideoProcessor {
-  /** 生成 concat 列表文件（拼接用），返回文件路径 */
-  static createConcatList(inputs: Array<string>, listPath: string): void {
-    const lines: Array<string> = inputs.map((p: string) => `file '${p.replaceAll("'", "'\\''")}'`);
-    const fd = fs.openSync(listPath, fs.OpenMode.READ_WRITE | fs.OpenMode.CREATE | fs.OpenMode.TRUNC);
-    fs.writeSync(fd, lines.join('\n'));
-    fs.closeSync(fd);
+  private static callbackRegistered: boolean = false;
+  private static activeSessionId: number | undefined = undefined;
+  private static activeResolve: (() => void) | undefined = undefined;
+  private static activeReject: ((err: Error) => void) | undefined = undefined;
+  private static activeTimer: number | undefined = undefined;
+
+  static version(): string {
+    try {
+      return getFFmpegVersion();
+    } catch (e) {
+      return 'unknown';
+    }
+  }
+
+  /** 注册全局完成回调（仅一次），回调触发时驱动当前活动 Promise */
+  private static ensureCallback(): void {
+    if (VideoProcessor.callbackRegistered) {
+      return;
+    }
+    VideoProcessor.callbackRegistered = true;
+    enableFFmpegSessionCompleteCallback(() => {
+      const sid = VideoProcessor.activeSessionId;
+      if (sid === undefined) {
+        return;
+      }
+      if (VideoProcessor.activeTimer !== undefined) {
+        clearInterval(VideoProcessor.activeTimer);
+        VideoProcessor.activeTimer = undefined;
+      }
+      const code = abstractSessionGetReturnCode(sid);
+      if (code === 0) {
+        hilog.info(0x0000, TAG, 'ffmpeg session %{public}d success', sid);
+        VideoProcessor.activeResolve?.();
+      } else {
+        const logs = abstractSessionGetAllLogsAsString(sid, 0);
+        const tail = logs.length > 600 ? logs.substring(logs.length - 600) : logs;
+        hilog.error(0x0000, TAG, 'ffmpeg session %{public}d failed code=%{public}d', sid, code);
+        VideoProcessor.activeReject?.(new Error(`ffmpeg 退出码 ${code}: ${tail}`));
+      }
+      VideoProcessor.activeSessionId = undefined;
+      VideoProcessor.activeResolve = undefined;
+      VideoProcessor.activeReject = undefined;
+    });
   }
 
   /**
-   * 裁剪（统一重编码 libx264，保证起止点精确）。
+   * 执行一条 ffmpeg 命令（参数数组）。
+   * @param args  ffmpeg 参数（不含开头的 "ffmpeg"）
+   * @param onProgress 进度回调（秒，从日志 time= 解析）
    */
-  static async clip(input: string, startSec: number, durSec: number, output: string,
+  static execute(args: Array<string>, onProgress?: ProgressCallback): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      try {
+        VideoProcessor.ensureCallback();
+        const session: Map<string, ESObject> = ffmpegSession(args);
+        const sessionId: number = session.get('sessionId') as number;
+        if (sessionId === undefined || sessionId === null || Number.isNaN(sessionId)) {
+          reject(new Error('创建 ffmpeg 会话失败'));
+          return;
+        }
+        hilog.info(0x0000, TAG, 'execute session=%{public}d cmd=%{public}s', sessionId, args.join(' '));
+        VideoProcessor.activeSessionId = sessionId;
+        VideoProcessor.activeResolve = resolve;
+        VideoProcessor.activeReject = reject;
+        if (onProgress !== undefined) {
+          VideoProcessor.activeTimer = setInterval(() => {
+            try {
+              const logs = abstractSessionGetAllLogsAsString(sessionId, 0);
+              const m = /time=(\d+):(\d+):([\d.]+)/.exec(logs);
+              if (m !== null) {
+                const sec = parseInt(m[1]) * 3600 + parseInt(m[2]) * 60 + parseFloat(m[3]);
+                onProgress(sec);
+              }
+            } catch (e) {
+              // 日志读取失败忽略，等完成回调兜底
+            }
+          }, 500);
+        }
+        asyncFFmpegSessionExecute(sessionId);
+      } catch (e) {
+        reject(e as Error);
+      }
+    });
+  }
+
+  /** 裁剪：精确 seek + 拷贝编码（快速、无损） */
+  static clip(input: string, startSec: number, durSec: number, output: string,
     onProgress?: ProgressCallback): Promise<void> {
-    const dur = Math.max(0.1, durSec);
-    const cmd = `-y -ss ${startSec} -i ${input} -t ${dur} -c:v libx264 -preset veryfast -c:a aac ${output}`;
-    return VideoProcessor.execute(cmd, onProgress);
+    const args: Array<string> = [
+      '-y',
+      '-ss', startSec.toFixed(2),
+      '-i', input,
+      '-t', durSec.toFixed(2),
+      '-c', 'copy',
+      output
+    ];
+    return VideoProcessor.execute(args, onProgress);
+  }
+
+  /** 压缩：按预设缩放 + libx264 重编码 */
+  static compress(input: string, preset: CompressPreset, output: string,
+    onProgress?: ProgressCallback): Promise<void> {
+    const p = PRESET_MAP[preset];
+    const args: Array<string> = [
+      '-y',
+      '-i', input,
+      '-vf', `scale=${p.width}:${p.height}:force_original_aspect_ratio=decrease`,
+      '-c:v', 'libx264',
+      '-preset', 'veryfast',
+      '-b:v', p.bitrate,
+      '-c:a', 'aac',
+      '-b:a', '128k',
+      '-movflags', '+faststart',
+      output
+    ];
+    return VideoProcessor.execute(args, onProgress);
   }
 
   /**
    * 倍速（0.5x ~ 2x）：视频 setpts 变速 + 音频 atempo 变速保调。
    */
-  static async speed(input: string, rate: number, output: string, onProgress?: ProgressCallback): Promise<void> {
+  static speed(input: string, rate: number, output: string, onProgress?: ProgressCallback): Promise<void> {
     const r = Math.min(2, Math.max(0.5, rate));
     const v = (1 / r).toFixed(3);
     const a = r.toFixed(3);
-    const cmd = `-y -i ${input} ` +
-      `-filter_complex "[0:v]setpts=${v}*PTS[v];[0:a]atempo=${a}[a]" ` +
-      `-map "[v]" -map "[a]" -c:v libx264 -preset veryfast -c:a aac ${output}`;
-    return VideoProcessor.execute(cmd, onProgress);
+    const args: Array<string> = [
+      '-y',
+      '-i', input,
+      '-filter_complex', `[0:v]setpts=${v}*PTS[v];[0:a]atempo=${a}[a]`,
+      '-map', '[v]',
+      '-map', '[a]',
+      '-c:v', 'libx264',
+      '-preset', 'veryfast',
+      '-c:a', 'aac',
+      output
+    ];
+    return VideoProcessor.execute(args, onProgress);
+  }
+
+  /** 拼接（concat demuxer，要求各段编码一致；不一致时先转码统一） */
+  static concat(listFilePath: string, output: string, onProgress?: ProgressCallback): Promise<void> {
+    const args: Array<string> = [
+      '-y',
+      '-f', 'concat',
+      '-safe', '0',
+      '-i', listFilePath,
+      '-c', 'copy',
+      output
+    ];
+    return VideoProcessor.execute(args, onProgress);
   }
 
   /**
-   * 拼接（concat demuxer，要求各段编码一致；不一致时先转码统一）。
-   */
-  static async concat(listFilePath: string, output: string, onProgress?: ProgressCallback): Promise<void> {
-    const cmd = `-y -f concat -safe 0 -i ${listFilePath} -c copy ${output}`;
-    return VideoProcessor.execute(cmd, onProgress);
-  }
-
-  /**
-   * 拼接（D5 主用）：filter_complex 动态拼接，统一缩放 720p 并重编码，
+   * 拼接（主用）：filter_complex 动态拼接，统一缩放 720p 并重编码，
    * 兼容不同来源（相机/相册）编码与分辨率不一致的片段。
    */
-  static async concatFilter(inputs: Array<string>, output: string, onProgress?: ProgressCallback): Promise<void> {
+  static concatFilter(inputs: Array<string>, output: string, onProgress?: ProgressCallback): Promise<void> {
     const n = inputs.length;
     if (n < 2) {
-      throw new Error('拼接至少需要 2 段视频');
+      return Promise.reject(new Error('拼接至少需要 2 段视频'));
     }
     const parts: Array<string> = [];
     const maps: Array<string> = [];
     for (let i = 0; i < n; i++) {
-      // 统一缩放至 720p 宽、等比缩放后补边（黑边），保证分辨率/像素格式一致
       parts.push(`[${i}:v]scale=1280:720:force_original_aspect_ratio=decrease,` +
         `pad=1280:720:(ow-iw)/2:(oh-ih)/2,setsar=1[v${i}];`);
       maps.push(`[v${i}][${i}:a]`);
     }
     const filter = `${parts.join('')}${maps.join('')}concat=n=${n}:v=1:a=1[vout][aout]`;
-    const inputsArgs = inputs.map((p: string) => `-i ${p}`).join(' ');
-    const cmd = `-y ${inputsArgs} -filter_complex "${filter}" ` +
-      `-map "[vout]" -map "[aout]" -c:v libx264 -preset veryfast -c:a aac ${output}`;
-    return VideoProcessor.execute(cmd, onProgress);
-  }
-
-  /**
-   * 压缩/转码：三档预设。
-   */
-  static async compress(input: string, preset: CompressPreset, output: string,
-    onProgress?: ProgressCallback): Promise<void> {
-    const p = PRESET_MAP[preset];
-    const cmd =
-      `-y -i ${input} -vf scale=${p.width}:${p.height} -b:v ${p.bitrate} -r 30 ` +
-      `-c:v libx264 -preset veryfast -c:a aac ${output}`;
-    return VideoProcessor.execute(cmd, onProgress);
-  }
-
-  /**
-   * 统一执行入口：executeAsync 异步执行 + stderr 日志进度 + 返回码校验。
-   */
-  private static async execute(cmd: string, onProgress?: ProgressCallback): Promise<void> {
-    hilog.info(0x0000, TAG, 'ffmpeg cmd: %{public}s', cmd);
-    return new Promise<void>((resolve, reject) => {
-      const session = FFmpegKit.executeAsync(cmd, (log) => {
-        const msg = log.getMessage();
-        hilog.debug(0x0000, TAG, '[ffmpeg] %{public}s', msg);
-        // 解析进度：time=00:01:23.45
-        const m = /time=(\d+):(\d+):([\d.]+)/.exec(msg);
-        if (m !== null && onProgress !== undefined) {
-          const secs = parseInt(m[1], 10) * 3600 + parseInt(m[2], 10) * 60 + parseFloat(m[3]);
-          onProgress(Math.min(99, Math.floor(secs * 10))); // 估算进度（无总时长信息时）
-        }
-      });
-      session.complete.then((stats) => {
-        if (ReturnCode.isSuccess(stats.getReturnCode())) {
-          if (onProgress !== undefined) {
-            onProgress(100);
-          }
-          hilog.info(0x0000, TAG, 'ffmpeg ok');
-          resolve();
-        } else {
-          const stack = stats.getFailStackTrace();
-          hilog.error(0x0000, TAG, 'ffmpeg failed: %{public}s', stack);
-          reject(new Error(`ffmpeg failed: ${stack}`));
-        }
-      }).catch((err: Error) => {
-        hilog.error(0x0000, TAG, 'ffmpeg session error %{public}s', err.message);
-        reject(err);
-      });
-    });
+    const args: Array<string> = ['-y'];
+    for (const p of inputs) {
+      args.push('-i', p);
+    }
+    args.push(
+      '-filter_complex', filter,
+      '-map', '[vout]',
+      '-map', '[aout]',
+      '-c:v', 'libx264',
+      '-preset', 'veryfast',
+      '-c:a', 'aac',
+      output
+    );
+    return VideoProcessor.execute(args, onProgress);
   }
 }
