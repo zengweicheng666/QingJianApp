@@ -3,6 +3,7 @@
     "pages/Index",
     "pages/AlbumPage",
     "pages/EditPage",
-    "pages/ExportPage"
+    "pages/ExportPage",
+    "pages/ClipMergePage"
   ]
 }

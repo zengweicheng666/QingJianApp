@@ -48,6 +48,30 @@ export class VideoProcessor {
   }
 
   /**
+   * 拼接（D5 主用）：filter_complex 动态拼接，统一缩放 720p 并重编码，
+   * 兼容不同来源（相机/相册）编码与分辨率不一致的片段。
+   */
+  static async concatFilter(inputs: Array<string>, output: string, onProgress?: ProgressCallback): Promise<void> {
+    const n = inputs.length;
+    if (n < 2) {
+      throw new Error('拼接至少需要 2 段视频');
+    }
+    const parts: Array<string> = [];
+    const maps: Array<string> = [];
+    for (let i = 0; i < n; i++) {
+      // 统一缩放至 720p 宽、等比缩放后补边（黑边），保证分辨率/像素格式一致
+      parts.push(`[${i}:v]scale=1280:720:force_original_aspect_ratio=decrease,` +
+        `pad=1280:720:(ow-iw)/2:(oh-ih)/2,setsar=1[v${i}];`);
+      maps.push(`[v${i}][${i}:a]`);
+    }
+    const filter = `${parts.join('')}${maps.join('')}concat=n=${n}:v=1:a=1[vout][aout]`;
+    const inputsArgs = inputs.map((p: string) => `-i ${p}`).join(' ');
+    const cmd = `-y ${inputsArgs} -filter_complex "${filter}" ` +
+      `-map "[vout]" -map "[aout]" -c:v libx264 -preset veryfast -c:a aac ${output}`;
+    return VideoProcessor.execute(cmd, onProgress);
+  }
+
+  /**
    * 压缩/转码：三档预设。
    */
   static async compress(input: string, preset: CompressPreset, output: string,

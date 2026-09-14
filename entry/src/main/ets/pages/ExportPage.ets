@@ -26,19 +26,33 @@ struct ExportPage {
   @State outputPath: string = '';
   @State preset: CompressPreset = '720p';
   @State useCompress: boolean = false;
+  @State mode: string = 'clip';
+  @State clipPaths: Array<string> = [];
 
   aboutToAppear(): void {
-    const params = router.getParams() as Record<string, number | string>;
+    const params = router.getParams() as Record<string, number | string | Array<string>>;
     if (params !== undefined) {
-      this.videoPath = (params.videoPath as string) ?? '';
-      this.startSec = (params.startSec as number) ?? 0;
-      this.endSec = (params.endSec as number) ?? 0;
+      this.mode = (params.mode as string) ?? 'clip';
+      if (this.mode === 'concat') {
+        this.clipPaths = (params.clipPaths as Array<string>) ?? [];
+      } else {
+        this.videoPath = (params.videoPath as string) ?? '';
+        this.startSec = (params.startSec as number) ?? 0;
+        this.endSec = (params.endSec as number) ?? 0;
+      }
     }
   }
 
-  /** 执行导出：裁剪 或 压缩（勾选压缩时走压缩预设） */
+  /** 执行导出：拼接 / 裁剪 / 压缩 */
   private async startExport(): Promise<void> {
-    if (this.videoPath === '' || this.exporting) {
+    if (this.exporting) {
+      return;
+    }
+    if (this.mode === 'concat' && this.clipPaths.length < 2) {
+      promptAction.showToast({ message: '拼接至少需要 2 段视频' });
+      return;
+    }
+    if (this.mode !== 'concat' && this.videoPath === '') {
       return;
     }
     this.exporting = true;
@@ -46,7 +60,10 @@ struct ExportPage {
     this.statusText = '处理中...';
     try {
       const outPath = `${getContext(this).filesDir}/qingjian_out_${Date.now()}.mp4`;
-      if (this.useCompress) {
+      if (this.mode === 'concat') {
+        await VideoProcessor.concatFilter(this.clipPaths, outPath,
+          (p: number) => this.progress = p);
+      } else if (this.useCompress) {
         await VideoProcessor.compress(this.videoPath, this.preset, outPath,
           (p: number) => this.progress = p);
       } else {
@@ -99,7 +116,11 @@ struct ExportPage {
         .fontWeight(FontWeight.Bold)
         .margin({ top: 28 })
 
-      if (this.videoPath !== '') {
+      if (this.mode === 'concat') {
+        Text(`拼接 ${this.clipPaths.length} 段视频`)
+          .fontSize(14)
+          .fontColor('#334')
+      } else if (this.videoPath !== '') {
         Text(this.useCompress ? '压缩/转码' : `裁剪 ${this.startSec}s → ${this.endSec}s`)
           .fontSize(14)
           .fontColor('#334')

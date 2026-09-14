@@ -169,6 +169,12 @@ struct EditPage {
         .margin({ top: 8 })
         .onClick(() => this.goExport())
 
+      Button('去拼接（D5）')
+        .width(240)
+        .onClick(() => {
+          router.pushUrl({ url: 'pages/ClipMergePage' }).catch(() => undefined);
+        })
+
       Button('返回')
         .width(240)
         .onClick(() => {
