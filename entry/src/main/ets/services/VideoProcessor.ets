@@ -40,6 +40,19 @@ export class VideoProcessor {
   }
 
   /**
+   * 倍速（0.5x ~ 2x）：视频 setpts 变速 + 音频 atempo 变速保调。
+   */
+  static async speed(input: string, rate: number, output: string, onProgress?: ProgressCallback): Promise<void> {
+    const r = Math.min(2, Math.max(0.5, rate));
+    const v = (1 / r).toFixed(3);
+    const a = r.toFixed(3);
+    const cmd = `-y -i ${input} ` +
+      `-filter_complex "[0:v]setpts=${v}*PTS[v];[0:a]atempo=${a}[a]" ` +
+      `-map "[v]" -map "[a]" -c:v libx264 -preset veryfast -c:a aac ${output}`;
+    return VideoProcessor.execute(cmd, onProgress);
+  }
+
+  /**
    * 拼接（concat demuxer，要求各段编码一致；不一致时先转码统一）。
    */
   static async concat(listFilePath: string, output: string, onProgress?: ProgressCallback): Promise<void> {

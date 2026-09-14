@@ -28,6 +28,7 @@ struct ExportPage {
   @State useCompress: boolean = false;
   @State mode: string = 'clip';
   @State clipPaths: Array<string> = [];
+  @State speed: number = 1;
 
   aboutToAppear(): void {
     const params = router.getParams() as Record<string, number | string | Array<string>>;
@@ -39,11 +40,16 @@ struct ExportPage {
         this.videoPath = (params.videoPath as string) ?? '';
         this.startSec = (params.startSec as number) ?? 0;
         this.endSec = (params.endSec as number) ?? 0;
+        this.speed = (params.speed as number) ?? 1;
+        if (this.mode === 'compress') {
+          // 直接压缩入口：强制走压缩预设
+          this.useCompress = true;
+        }
       }
     }
   }
 
-  /** 执行导出：拼接 / 裁剪 / 压缩 */
+  /** 执行导出：拼接 / 倍速 / 压缩 / 裁剪 */
   private async startExport(): Promise<void> {
     if (this.exporting) {
       return;
@@ -63,6 +69,9 @@ struct ExportPage {
       outPath = `${getContext(this).filesDir}/qingjian_out_${Date.now()}.mp4`;
       if (this.mode === 'concat') {
         await VideoProcessor.concatFilter(this.clipPaths, outPath,
+          (p: number) => this.progress = p);
+      } else if (this.speed !== 1) {
+        await VideoProcessor.speed(this.videoPath, this.speed, outPath,
           (p: number) => this.progress = p);
       } else if (this.useCompress) {
         await VideoProcessor.compress(this.videoPath, this.preset, outPath,
@@ -131,7 +140,8 @@ struct ExportPage {
           .fontSize(14)
           .fontColor('#334')
       } else if (this.videoPath !== '') {
-        Text(this.useCompress ? '压缩/转码' : `裁剪 ${this.startSec}s → ${this.endSec}s`)
+        Text(this.speed !== 1 ? `倍速 ${this.speed}x` :
+          (this.useCompress ? '压缩/转码' : `裁剪 ${this.startSec}s → ${this.endSec}s`))
           .fontSize(14)
           .fontColor('#334')
       } else {
@@ -162,9 +172,11 @@ struct ExportPage {
       }
       .justifyContent(FlexAlign.Center)
 
-      Checkbox('压缩导出（默认裁剪）')
-        .select(this.useCompress)
-        .onChange((checked: boolean) => this.useCompress = checked)
+      if (this.mode !== 'compress') {
+        Checkbox('压缩导出（默认裁剪）')
+          .select(this.useCompress)
+          .onChange((checked: boolean) => this.useCompress = checked)
+      }
 
       Progress({ value: this.progress, total: 100, type: ProgressType.Linear })
         .width('80%')

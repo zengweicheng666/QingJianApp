@@ -1,10 +1,10 @@
 import { router } from '@kit.ArkUI';
 import { common } from '@kit.AbilityKit';
-import { fileIo as fs } from '@kit.CoreFileKit';
 import { photoAccessHelper } from '@kit.MediaLibraryKit';
 import { BusinessError } from '@kit.BasicServicesKit';
 import { promptAction } from '@kit.ArkUI';
 import { hilog } from '@kit.PerformanceAnalysisKit';
+import { FileUtil } from '../utils/FileUtil';
 
 const TAG = 'QingJian';
 
@@ -31,7 +31,7 @@ struct ClipMergePage {
       if (uris === undefined || uris.length === 0) {
         return;
       }
-      const path = await this.copyUriToSandbox(uris[0], this.clips.length);
+      const path = FileUtil.copyUriToSandbox(uris[0], this.clips.length);
       this.clips.push(path);
       promptAction.showToast({ message: `已添加第 ${this.clips.length} 段` });
     } catch (err) {
@@ -39,32 +39,6 @@ struct ClipMergePage {
       hilog.error(0x0000, TAG, 'addClip failed code=%{public}d msg=%{public}s', e.code, e.message);
       promptAction.showToast({ message: '添加片段失败' });
     }
-  }
-
-  /** 将相册 uri 拷贝到应用沙箱（ffmpeg 只认真实文件路径） */
-  private async copyUriToSandbox(uri: string, index: number): Promise<string> {
-    const dot = uri.lastIndexOf('.');
-    const ext = dot >= 0 ? uri.substring(dot + 1) : 'mp4';
-    const dest = `${getContext(this).filesDir}/clip_${Date.now()}_${index}.${ext}`;
-    const srcFd = fs.openSync(uri, fs.OpenMode.READ_ONLY);
-    const dstFd = fs.openSync(dest, fs.OpenMode.READ_WRITE | fs.OpenMode.CREATE | fs.OpenMode.TRUNC);
-    const buf = new ArrayBuffer(1 << 20); // 1MB 缓冲
-    let offset = 0;
-    try {
-      while (true) {
-        const read = fs.readSync(srcFd, buf, { position: offset });
-        if (read <= 0) {
-          break;
-        }
-        fs.writeSync(dstFd, buf, { position: offset, length: read });
-        offset += read;
-      }
-    } finally {
-      fs.closeSync(srcFd);
-      fs.closeSync(dstFd);
-    }
-    hilog.info(0x0000, TAG, 'copied %{public}s -> %{public}s (%{public}d bytes)', uri, dest, offset);
-    return dest;
   }
 
   private moveUp(index: number): void {

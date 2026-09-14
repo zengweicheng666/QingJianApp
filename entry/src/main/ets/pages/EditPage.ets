@@ -16,7 +16,9 @@ struct EditPage {
   @State durationSec: number = 0;
   @State startSec: number = 0;
   @State endSec: number = 0;
+  @State speed: number = 1;
   private videoController: VideoController = new VideoController();
+  private readonly speedOptions: Array<number> = [0.5, 1, 1.5, 2];
 
   aboutToAppear(): void {
     const params = router.getParams() as Record<string, string>;
@@ -77,7 +79,8 @@ struct EditPage {
         videoPath: this.videoPath,
         startSec: this.startSec,
         endSec: this.endSec,
-        durationSec: this.durationSec
+        durationSec: this.durationSec,
+        speed: this.speed
       }
     }).catch((err: Error) => {
       hilog.error(0x0000, TAG, 'push ExportPage failed %{public}s', err.message);
@@ -153,14 +156,34 @@ struct EditPage {
         }
         .width('100%')
         .alignItems(HorizontalAlign.Center)
+
+        // 倍速选择
+        Column({ space: 8 }) {
+          Text('倍速')
+            .fontSize(14)
+          Row({ space: 10 }) {
+            ForEach(this.speedOptions, (opt: number) => {
+              Button(`${opt}x`)
+                .width(64)
+                .height(36)
+                .fontSize(13)
+                .backgroundColor(this.speed === opt ? '#0b57a4' : '#e8eef7')
+                .fontColor(this.speed === opt ? Color.White : '#334')
+                .type(ButtonType.Capsule)
+                .onClick(() => this.speed = opt)
+            }, (opt: number) => `${opt}`)
+          }
+        }
+        .width('100%')
+        .alignItems(HorizontalAlign.Center)
       } else {
-        Text('D3 待实现：裁剪起止时间滑块（AVPlayer 读取时长后可用）')
+        Text('正在读取视频时长...')
           .fontSize(13)
           .fontColor('#889')
       }
 
-      Text('D5 待实现：拼接多段列表 + 顺序调整')
-        .fontSize(13)
+      Text('导出支持：裁剪 + 倍速 + 压缩预设；拼接入口在下方')
+        .fontSize(12)
         .fontColor('#889')
 
       Button('导出')
