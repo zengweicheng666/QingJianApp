@@ -1,5 +1,6 @@
 import { router } from '@kit.ArkUI';
 import { media } from '@kit.MediaKit';
+import { fileIo as fs } from '@kit.CoreFileKit';
 import { BusinessError } from '@kit.BasicServicesKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
@@ -41,13 +42,15 @@ struct EditPage {
     }
   }
 
-  /** AVPlayer 读时长：等待 initialized 状态再 prepare（直接 prepare 会报 5400102 idle） */
+  /** AVPlayer 读时长：fdSrc 喂源（模拟器不接受 file:// url，报 401），initialized→prepare→prepared 读 duration */
   private async loadDuration(): Promise<void> {
     if (this.videoPath === '') {
       return;
     }
     let avPlayer: media.AVPlayer | undefined = undefined;
+    let srcFile: fs.File | undefined = undefined;
     try {
+      srcFile = fs.openSync(this.videoPath, fs.OpenMode.READ_ONLY);
       avPlayer = await media.createAVPlayer();
       avPlayer.on('stateChange', async (state: media.AVPlayerState) => {
         if (state === 'initialized') {
@@ -59,12 +62,20 @@ struct EditPage {
           } catch (e) {
             hilog.warn(0x0000, TAG, 'release failed %{public}s', (e as Error).message);
           }
+          if (srcFile !== undefined) {
+            try {
+              fs.closeSync(srcFile);
+            } catch (e) {
+              hilog.warn(0x0000, TAG, 'close fd failed %{public}s', (e as Error).message);
+            }
+          }
         }
       });
       avPlayer.on('error', (err: BusinessError) => {
         hilog.error(0x0000, TAG, 'avPlayer error code=%{public}d msg=%{public}s', err.code, err.message);
       });
-      avPlayer.url = `file://${this.videoPath}`;
+      // 用文件描述符作为播放源（沙箱路径 file:// 在模拟器上被拒）
+      avPlayer.fdSrc = { fd: srcFile.fd };
     } catch (err) {
       const e = err as BusinessError;
       hilog.error(0x0000, TAG, 'loadDuration failed code=%{public}d msg=%{public}s', e.code, e.message);
