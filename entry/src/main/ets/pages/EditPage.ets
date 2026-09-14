@@ -28,22 +28,41 @@ struct EditPage {
     }
   }
 
-  /** 用 AVPlayer 读取视频时长（Video 组件不直接暴露 duration） */
+  /** 用 AVPlayer 读取视频时长：prepare 后读 duration 属性为主，durationUpdate 事件兜底 */
   private async loadDuration(): Promise<void> {
     if (this.videoPath === '') {
       return;
     }
+    let avPlayer: media.AVPlayer | undefined = undefined;
+    let released: boolean = false;
     try {
-      const avPlayer: media.AVPlayer = await media.createAVPlayer();
-      avPlayer.on('durationUpdate', (duration: number) => {
-        const total = Math.floor(duration / 1000);
-        this.durationSec = total;
-        this.startSec = 0;
-        this.endSec = total > 0 ? total : 0;
-        avPlayer.release();
-      });
+      avPlayer = await media.createAVPlayer();
+      const apply = (durationMs: number): void => {
+        if (durationMs > 0 && this.durationSec <= 0 && !released) {
+          const total = Math.floor(durationMs / 1000);
+          this.durationSec = total;
+          this.startSec = 0;
+          this.endSec = total > 0 ? total : 0;
+          released = true;
+          try {
+            avPlayer?.release();
+          } catch (e) {
+            hilog.warn(0x0000, TAG, 'release failed %{public}s', (e as Error).message);
+          }
+        }
+      };
+      // 事件兜底（部分环境 durationUpdate 可能不触发）
+      avPlayer.on('durationUpdate', (duration: number) => apply(duration));
       avPlayer.url = `file://${this.videoPath}`;
       await avPlayer.prepare();
+      // prepare 后直接读 duration 属性
+      apply(avPlayer.duration);
+      // 属性仍为 0 时延迟复查一次（等待状态稳定）
+      setTimeout(() => {
+        if (avPlayer !== undefined && this.durationSec <= 0) {
+          apply(avPlayer.duration);
+        }
+      }, 600);
     } catch (err) {
       const e = err as BusinessError;
       hilog.error(0x0000, TAG, 'loadDuration failed code=%{public}d msg=%{public}s', e.code, e.message);
