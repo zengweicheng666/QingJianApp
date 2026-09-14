@@ -13,6 +13,10 @@ export class PermissionUtil {
     'ohos.permission.MICROPHONE'
   ];
 
+  static readonly WRITE_MEDIA_PERMISSIONS: Array<Permissions> = [
+    'ohos.permission.WRITE_IMAGEVIDEO'
+  ];
+
   /**
    * 申请拍摄权限，返回是否全部授权。
    */
@@ -26,6 +30,23 @@ export class PermissionUtil {
     } catch (err) {
       const e = err as BusinessError;
       hilog.error(0x0000, TAG, 'requestCameraPermissions failed code=%{public}d msg=%{public}s', e.code, e.message);
+      return false;
+    }
+  }
+
+  /**
+   * 申请相册写入权限（保存导出视频到系统相册）。
+   */
+  static async requestWriteMediaPermission(context: common.UIAbilityContext): Promise<boolean> {
+    const atManager = abilityAccessCtrl.createAtManager();
+    try {
+      const result = await atManager.requestPermissionsFromUser(context, PermissionUtil.WRITE_MEDIA_PERMISSIONS);
+      const granted = result.authResults.every((r: number) => r === 0);
+      hilog.info(0x0000, TAG, 'requestWriteMediaPermission granted=%{public}s', JSON.stringify(result.authResults));
+      return granted;
+    } catch (err) {
+      const e = err as BusinessError;
+      hilog.error(0x0000, TAG, 'requestWriteMediaPermission failed code=%{public}d msg=%{public}s', e.code, e.message);
       return false;
     }
   }

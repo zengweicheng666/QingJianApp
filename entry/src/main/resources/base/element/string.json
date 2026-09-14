@@ -19,6 +19,10 @@
     {
       "name": "perm_mic_reason",
       "value": "用于录像时采集声音"
+    },
+    {
+      "name": "perm_write_media_reason",
+      "value": "用于将导出的视频保存到系统相册"
     }
   ]
 }
