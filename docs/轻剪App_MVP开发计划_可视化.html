@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-CN" style="margin:0;padding:0;">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>「轻剪」拍剪一体 App · MVP 开发计划一图流</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: "Microsoft YaHei", "PingFang SC", sans-serif; background: #f5f8fb; color: #1f2d3d; padding: 24px 16px; }
+  .wrap { max-width: 1080px; margin: 0 auto; }
+  h1 { font-size: 24px; color: #0b57a4; margin-bottom: 6px; }
+  .sub { font-size: 15px; color: #556; margin-bottom: 4px; }
+  .tag { display:inline-block; background:#e8f1fb; color:#0b57a4; border:1px solid #b9d6f2; border-radius:20px; padding:3px 12px; font-size:13px; margin:4px 6px 0 0; }
+  .note { font-size: 13px; color: #888; margin: 10px 0 4px; }
+  .card { background:#fff; border-radius:12px; border:1px solid #e3ebf3; padding:16px; box-shadow:0 1px 4px rgba(11,87,164,.06); }
+  .sec-title { font-size: 17px; font-weight: 700; color:#0b57a4; margin: 24px 0 12px; display:flex; align-items:center; gap:8px; }
+  .sec-title::before { content:""; width:6px; height:18px; background:#0b57a4; border-radius:3px; display:inline-block; }
+  /* 功能模块 */
+  .grid4 { display:grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap:12px; }
+  .m { border-top:4px solid #0b57a4; border-radius:10px; background:#fff; border-left:1px solid #e3ebf3; border-right:1px solid #e3ebf3; border-bottom:1px solid #e3ebf3; padding:12px 14px; }
+  .m h3 { font-size:15px; color:#0b57a4; margin-bottom:8px; }
+  .m ul { list-style:none; }
+  .m li { font-size:13.5px; color:#445; padding:3px 0 3px 16px; position:relative; }
+  .m li::before { content:"▸"; position:absolute; left:0; color:#0b57a4; }
+  .m .gate { font-size:12.5px; color:#0a7d33; background:#e9f7ee; border-radius:6px; padding:4px 8px; margin-top:8px; display:inline-block; }
+  /* 页面流程 */
+  .flow { display:flex; flex-wrap:wrap; align-items:stretch; gap:0; justify-content:center; }
+  .fnode { background:#eef5fd; border:1.5px solid #0b57a4; border-radius:10px; padding:10px 14px; text-align:center; min-width:120px; }
+  .fnode b { display:block; font-size:14px; color:#0b57a4; }
+  .fnode span { font-size:12.5px; color:#556; }
+  .farrow { align-self:center; color:#0b57a4; font-size:22px; padding:0 6px; font-weight:700; }
+  .freturn { align-self:center; font-size:12px; color:#888; padding:0 4px; text-align:center; }
+  /* 数据流 */
+  .pipe { display:flex; flex-wrap:wrap; align-items:stretch; justify-content:center; gap:0; margin-top:8px; }
+  .pnode { background:#fff; border:1.5px solid #7db4e8; border-radius:10px; padding:10px 14px; text-align:center; min-width:130px; }
+  .pnode b { display:block; font-size:13.5px; color:#0b57a4; }
+  .pnode span { font-size:12px; color:#667; }
+  .parrow { align-self:center; font-size:20px; color:#0b57a4; padding:0 6px; }
+  /* 里程碑 */
+  .gantt { position:relative; margin-top:10px; }
+  .grow { display:flex; align-items:center; margin:8px 0; }
+  .glabel { width:110px; font-size:13px; color:#445; flex-shrink:0; text-align:right; padding-right:10px; }
+  .gtrack { flex:1; height:30px; background:#eef2f7; border-radius:6px; position:relative; }
+  .gbar { position:absolute; top:3px; height:24px; border-radius:6px; color:#fff; font-size:12.5px; display:flex; align-items:center; justify-content:center; white-space:nowrap; }
+  .gbar b { font-weight:600; margin-right:6px; }
+  .gd1 { background:#2e7d32; left:0%; width:28.5%; }
+  .gd2 { background:#f9a825; left:28.5%; width:28.5%; }
+  .gd3 { background:#e65100; left:57%; width:28.5%; }
+  .gd4 { background:#1565c0; left:85.5%; width:14.5%; }
+  .gaxis { display:flex; margin-left:110px; font-size:12px; color:#889; }
+  .gaxis span { width:28.5%; }
+  .gaxis span:last-child { width:14.5%; }
+  /* 栈 */
+  .stack { display:flex; flex-direction:column; gap:0; }
+  .srow { display:flex; flex-wrap:wrap; gap:8px; align-items:center; padding:8px 12px; border-radius:8px; margin:3px 0; }
+  .srow .lbl { width:70px; font-size:13px; font-weight:700; color:#fff; text-align:center; border-radius:5px; padding:3px 0; flex-shrink:0; }
+  .srow .items { font-size:13px; color:#334; }
+  .srow .items code { background:#f0f4f9; border:1px solid #dde7f2; border-radius:4px; padding:1px 6px; font-size:12.5px; color:#0b57a4; }
+  .l1 { background:#0b57a4; } .l2 { background:#2e7d32; } .l3 { background:#e65100; } .l4 { background:#5e35b1; }
+  .b1 { background:#eef5fd; border:1px solid #cfe3f7; } .b2 { background:#eef7ee; border:1px solid #cfe8d2; }
+  .b3 { background:#fff4ec; border:1px solid #fbdcc3; } .b4 { background:#f5f0fc; border:1px solid #e2d5f5; }
+  .foot { margin-top:22px; font-size:12.5px; color:#889; border-top:1px dashed #ccd; padding-top:10px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>「轻剪」拍剪一体 App · MVP 开发计划</h1>
+  <div class="sub">打开相机即拍 · 拍完即剪 · 剪完即存 —— 相机（Camera Kit）+ 视频处理（ffmpeg NAPI）闭环工具</div>
+  <div>
+    <span class="tag">HarmonyOS NEXT · API 18+</span>
+    <span class="tag">ArkTS / ArkUI</span>
+    <span class="tag">NAPI</span>
+    <span class="tag">7 天 MVP</span>
+    <span class="tag">真机开发</span>
+  </div>
+  <div class="note">※ 计划示意（v1.0，2026-09-14），详细内容见《轻剪App_MVP开发计划.md》</div>
+
+  <div class="sec-title">① MVP 功能范围（4 大模块）</div>
+  <div class="grid4">
+    <div class="m" style="border-top-color:#0b57a4;"><h3>M1 相机拍摄</h3><ul>
+      <li>预览取景（XComponent）</li><li>录像 / 拍照</li><li>前后摄切换 · 闪光灯</li><li>录像 60s 上限</li></ul>
+      <span class="gate">✓ 能录像并落入系统相册</span></div>
+    <div class="m" style="border-top-color:#2e7d32;"><h3>M2 相册导入</h3><ul>
+      <li>系统相册视频网格</li><li>单选 / 多选</li><li>安全相册选择器（免权限）</li></ul>
+      <span class="gate">✓ 可选任意已有视频</span></div>
+    <div class="m" style="border-top-color:#e65100;"><h3>M3 视频编辑</h3><ul>
+      <li>裁剪：起止时间滑块（≥1s）</li><li>拼接：多段 + 顺序调整</li><li>播放器预览</li></ul>
+      <span class="gate">✓ 裁剪/拼接结果与设定一致</span></div>
+    <div class="m" style="border-top-color:#1565c0;"><h3>M4 导出</h3><ul>
+      <li>480p / 720p / 1080p 预设</li><li>码率选择 · 进度条</li><li>保存相册 · 失败提示</li></ul>
+      <span class="gate">✓ 导出视频可播放</span></div>
+  </div>
+
+  <div class="sec-title">② 页面流程</div>
+  <div class="card">
+    <div class="flow">
+      <div class="fnode"><b>相机页</b><span>预览·录像·拍照</span></div>
+      <div class="farrow">▶</div>
+      <div class="fnode"><b>编辑页</b><span>裁剪 / 拼接</span></div>
+      <div class="farrow">▶</div>
+      <div class="fnode"><b>导出页</b><span>进度·结果</span></div>
+      <div class="farrow">▶</div>
+      <div class="fnode"><b>系统相册</b><span>可播放</span></div>
+      <div class="freturn">▲ 再次编辑</div>
+    </div>
+    <div class="flow" style="margin-top:10px;">
+      <div class="fnode" style="opacity:.75;"><b>相册选择页</b><span>相册入口（右上角）</span></div>
+      <div class="farrow">▶</div>
+      <div class="fnode"><b>编辑页</b><span>处理已有视频</span></div>
+    </div>
+  </div>
+
+  <div class="sec-title">③ 数据流（拍 → 剪 → 存）</div>
+  <div class="card">
+    <div class="pipe">
+      <div class="pnode"><b>Camera Kit</b><span>预览 + 录像</span></div>
+      <div class="parrow">→</div>
+      <div class="pnode"><b>mp4 临时文件</b><span>沙箱 filesDir</span></div>
+      <div class="parrow">→</div>
+      <div class="pnode"><b>ffmpeg-kit NAPI</b><span>裁剪/拼接/压缩</span></div>
+      <div class="parrow">→</div>
+      <div class="pnode"><b>PhotoAccessHelper / SaveButton</b><span>写入系统相册</span></div>
+    </div>
+  </div>
+
+  <div class="sec-title">④ 里程碑排期（7 天 · 真机）</div>
+  <div class="card">
+    <div class="gantt">
+      <div class="grow"><div class="glabel">阶段 A · 拍摄基础</div><div class="gtrack"><div class="gbar gd1"><b>D1-D2</b>工程+权限+预览拍照 / 录像落地+切换+相册</div></div></div>
+      <div class="grow"><div class="glabel">阶段 B · 编辑导出闭环</div><div class="gtrack"><div class="gbar gd2"><b>D3-D4</b>编辑页+ffmpeg接通 / 裁剪导出全链路</div></div></div>
+      <div class="grow"><div class="glabel">阶段 C · 拼接压缩</div><div class="gtrack"><div class="gbar gd3"><b>D5-D6</b>多段拼接 / 三档压缩+进度+容错</div></div></div>
+      <div class="grow"><div class="glabel">阶段 D · 打磨交付</div><div class="gtrack"><div class="gbar gd4"><b>D7</b>边界+回归</div></div></div>
+      <div class="gaxis"><span>D1 · D2</span><span>D3 · D4</span><span>D5 · D6</span><span>D7</span></div>
+    </div>
+  </div>
+
+  <div class="sec-title">⑤ 技术栈分层</div>
+  <div class="card">
+    <div class="stack">
+      <div class="srow b1"><span class="lbl l1">UI 层</span><span class="items">相机页 · 相册页 · 编辑页 · 导出页（ArkTS / ArkUI）</span></div>
+      <div class="srow b2"><span class="lbl l2">服务层</span><span class="items"><code>CameraService</code> 相机生命周期封装 · <code>VideoProcessor</code> ffmpeg 命令封装（Promise + 进度回调）</span></div>
+      <div class="srow b3"><span class="lbl l3">能力层</span><span class="items"><code>@ohos/ffmpeg-kit</code>（NAPI 桥接 ffmpeg.so）—— 裁剪 / 拼接 / 压缩命令模板</span></div>
+      <div class="srow b4"><span class="lbl l4">系统层</span><span class="items"><code>Camera Kit</code> 相机采集 · <code>Media Kit AVRecorder</code> 录像落盘 · <code>PhotoAccessHelper</code> 媒体库读写 · 安全控件 <code>SaveButton</code> 免权限保存</span></div>
+    </div>
+  </div>
+
+  <div class="foot">关联资料：D:\Work-HMOS\NAPI相机视频开发资料\（Camera Kit NDK 指南 · AVCodec 指南 · hm-codec-demo · MediaCuteDemo）｜ 二期方向：NDK 相机流直通编码、实时滤镜、模板化剪辑</div>
+</div>
+</body>
+</html>

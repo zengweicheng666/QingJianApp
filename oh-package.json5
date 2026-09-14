@@ -1,0 +1,8 @@
+{
+  "modelVersion": "5.0.0",
+  "description": "轻剪 - 拍剪一体轻量视频工具（HarmonyOS NEXT）",
+  "dependencies": {},
+  "devDependencies": {
+    "@ohos/hypium": "1.0.19"
+  }
+}

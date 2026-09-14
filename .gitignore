@@ -1,0 +1,22 @@
+# DevEco Studio / HarmonyOS
+/node_modules
+/oh_modules
+/.hvigor
+/.idea
+/.clangd
+/.clang-format
+/.clang-tidy
+**/.test
+**/build
+**/.cxx
+**/oh_modules
+/.appanalyzer
+/local.properties
+/.project
+/.settings
+/oh-package-lock.json5
+
+# 系统/编辑器
+.DS_Store
+Thumbs.db
+*.log
