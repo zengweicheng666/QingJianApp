@@ -51,6 +51,8 @@ struct EditPage {
     let srcFile: fs.File | undefined = undefined;
     try {
       srcFile = fs.openSync(this.videoPath, fs.OpenMode.READ_ONLY);
+      // fdSrc 必须带 offset/length，否则 demuxer 报 5400106 unsupport interface
+      const fileSize: number = fs.statSync(this.videoPath).size;
       avPlayer = await media.createAVPlayer();
       avPlayer.on('stateChange', async (state: media.AVPlayerState) => {
         if (state === 'initialized') {
@@ -73,12 +75,33 @@ struct EditPage {
       });
       avPlayer.on('error', (err: BusinessError) => {
         hilog.error(0x0000, TAG, 'avPlayer error code=%{public}d msg=%{public}s', err.code, err.message);
+        // AVPlayer 解封装失败时，改用元数据提取器（只读 demux，兼容性更宽）
+        if (srcFile !== undefined) {
+          this.extractByMetadata(srcFile.fd, fileSize);
+        }
       });
-      // 用文件描述符作为播放源（沙箱路径 file:// 在模拟器上被拒）
-      avPlayer.fdSrc = { fd: srcFile.fd };
+      // 用文件描述符作为播放源（沙箱路径 file:// 在模拟器上被拒，且必须带 offset/length）
+      avPlayer.fdSrc = { fd: srcFile.fd, offset: 0, length: fileSize };
     } catch (err) {
       const e = err as BusinessError;
       hilog.error(0x0000, TAG, 'loadDuration failed code=%{public}d msg=%{public}s', e.code, e.message);
+    }
+  }
+
+  /** 兜底：AVMetadataExtractor 只读元数据拿时长（毫秒字符串） */
+  private async extractByMetadata(fd: number, length: number): Promise<void> {
+    let extractor: media.AVMetadataExtractor | undefined = undefined;
+    try {
+      extractor = await media.createAVMetadataExtractor();
+      extractor.fdSrc = { fd: fd, offset: 0, length: length };
+      const metadata: media.AVMetadata = await extractor.fetchMetadata();
+      const durMs: number = parseInt(metadata.duration ?? '0', 10);
+      hilog.info(0x0000, TAG, 'metadata extractor duration=%{public}s', metadata.duration ?? '');
+      this.applyDuration(Number.isNaN(durMs) ? 0 : durMs);
+      await extractor.release();
+    } catch (err) {
+      const e = err as BusinessError;
+      hilog.error(0x0000, TAG, 'extractByMetadata failed code=%{public}d msg=%{public}s', e.code, e.message);
     }
   }
 
