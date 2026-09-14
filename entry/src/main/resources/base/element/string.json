@@ -1,0 +1,24 @@
+{
+  "string": [
+    {
+      "name": "module_desc",
+      "value": "轻剪主模块"
+    },
+    {
+      "name": "EntryAbility_desc",
+      "value": "轻剪 - 拍剪一体轻量视频工具"
+    },
+    {
+      "name": "EntryAbility_label",
+      "value": "轻剪"
+    },
+    {
+      "name": "perm_camera_reason",
+      "value": "用于拍摄照片和视频"
+    },
+    {
+      "name": "perm_mic_reason",
+      "value": "用于录像时采集声音"
+    }
+  ]
+}

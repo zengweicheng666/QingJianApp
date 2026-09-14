@@ -1,0 +1,8 @@
+{
+  "src": [
+    "pages/Index",
+    "pages/AlbumPage",
+    "pages/EditPage",
+    "pages/ExportPage"
+  ]
+}
