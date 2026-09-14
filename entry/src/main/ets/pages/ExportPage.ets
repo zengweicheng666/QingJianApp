@@ -106,11 +106,20 @@ struct ExportPage {
           hilog.warn(0x0000, TAG, 'clean output failed %{public}s', (cleanErr as Error).message);
         }
       }
-      this.statusText = `处理失败：${e.message}`;
+      this.statusText = this.friendlyError(e.message);
       promptAction.showToast({ message: '处理失败，请重试' });
     } finally {
       this.exporting = false;
     }
+  }
+
+  /** 识别"x86 模拟器缺 arm64 原生库"错误并给出可读提示 */
+  private friendlyError(raw: string): string {
+    if (raw.includes('libffmpegkit') || raw.includes('JSBind') ||
+      raw.includes('shared library') || raw.includes('native module failed')) {
+      return '当前设备（x86 模拟器）缺少视频处理原生库：ffmpeg 仅提供 arm64 版本，请改用真机或 arm64-v8a 模拟器';
+    }
+    return `处理失败：${raw}`;
   }
 
   /** 保存到相册：photoAccessHelper.createAsset 写入（需 WRITE_IMAGEVIDEO 权限） */
@@ -216,6 +225,12 @@ struct ExportPage {
         .width(240)
         .enabled(this.outputPath !== '')
         .onClick(() => this.saveToAlbum())
+
+      if (this.outputPath === '') {
+        Text('（导出成功后此按钮可用）')
+          .fontSize(11)
+          .fontColor('#aab')
+      }
 
       Button('返回')
         .width(240)
