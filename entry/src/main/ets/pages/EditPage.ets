@@ -1,13 +1,12 @@
 import { router } from '@kit.ArkUI';
-import { media } from '@kit.MediaKit';
-import { BusinessError } from '@kit.BasicServicesKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
 const TAG = 'QingJian';
 
 /**
  * 编辑页（D3）：视频播放 + 裁剪起止时间（最小 1s）+ 拼接占位 + 导出入口。
- * 路由参数：videoPath（来自相机录像或相册选择）。
+ * 路由参数：videoPath（来自相机录像或相册/文件选择）。
+ * 时长来源：Video 组件 onPrepared 事件（AVPlayer 状态机在模拟器上易卡 idle，弃用）。
  */
 @Entry
 @Component
@@ -24,48 +23,17 @@ struct EditPage {
     const params = router.getParams() as Record<string, string>;
     if (params !== undefined && params.videoPath !== undefined) {
       this.videoPath = params.videoPath;
-      this.loadDuration();
     }
   }
 
-  /** 用 AVPlayer 读取视频时长：prepare 后读 duration 属性为主，durationUpdate 事件兜底 */
-  private async loadDuration(): Promise<void> {
-    if (this.videoPath === '') {
-      return;
-    }
-    let avPlayer: media.AVPlayer | undefined = undefined;
-    let released: boolean = false;
-    try {
-      avPlayer = await media.createAVPlayer();
-      const apply = (durationMs: number): void => {
-        if (durationMs > 0 && this.durationSec <= 0 && !released) {
-          const total = Math.floor(durationMs / 1000);
-          this.durationSec = total;
-          this.startSec = 0;
-          this.endSec = total > 0 ? total : 0;
-          released = true;
-          try {
-            avPlayer?.release();
-          } catch (e) {
-            hilog.warn(0x0000, TAG, 'release failed %{public}s', (e as Error).message);
-          }
-        }
-      };
-      // 事件兜底（部分环境 durationUpdate 可能不触发）
-      avPlayer.on('durationUpdate', (duration: number) => apply(duration));
-      avPlayer.url = `file://${this.videoPath}`;
-      await avPlayer.prepare();
-      // prepare 后直接读 duration 属性
-      apply(avPlayer.duration);
-      // 属性仍为 0 时延迟复查一次（等待状态稳定）
-      setTimeout(() => {
-        if (avPlayer !== undefined && this.durationSec <= 0) {
-          apply(avPlayer.duration);
-        }
-      }, 600);
-    } catch (err) {
-      const e = err as BusinessError;
-      hilog.error(0x0000, TAG, 'loadDuration failed code=%{public}d msg=%{public}s', e.code, e.message);
+  /** Video 组件准备完成：拿到时长（毫秒）并初始化裁剪区间 */
+  private onVideoPrepared(durationMs: number): void {
+    if (durationMs > 0 && this.durationSec <= 0) {
+      const total = Math.floor(durationMs / 1000);
+      this.durationSec = total;
+      this.startSec = 0;
+      this.endSec = total > 0 ? total : 0;
+      hilog.info(0x0000, TAG, 'video prepared duration=%{public}d ms', durationMs);
     }
   }
 
@@ -121,6 +89,7 @@ struct EditPage {
           .width('100%')
           .height(280)
           .controls(true)
+          .onPrepared((event: PreparedInfo) => this.onVideoPrepared(event.duration))
       } else {
         Text('未选择视频')
           .fontSize(14)
