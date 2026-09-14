@@ -1,4 +1,6 @@
 import { router } from '@kit.ArkUI';
+import { media } from '@kit.MediaKit';
+import { BusinessError } from '@kit.BasicServicesKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
 const TAG = 'QingJian';
@@ -6,7 +8,8 @@ const TAG = 'QingJian';
 /**
  * 编辑页（D3）：视频播放 + 裁剪起止时间（最小 1s）+ 拼接占位 + 导出入口。
  * 路由参数：videoPath（来自相机录像或相册/文件选择）。
- * 时长来源：Video 组件 onPrepared 事件（AVPlayer 状态机在模拟器上易卡 idle，弃用）。
+ * 时长来源：AVPlayer 标准状态机（initialized→prepare→prepared 读 duration）；
+ *           Video.onPrepared 仅作兜底，且过滤 <1s 假值（模拟器曾返回 51ms）。
  */
 @Entry
 @Component
@@ -23,18 +26,54 @@ struct EditPage {
     const params = router.getParams() as Record<string, string>;
     if (params !== undefined && params.videoPath !== undefined) {
       this.videoPath = params.videoPath;
+      this.loadDuration();
     }
   }
 
-  /** Video 组件准备完成：拿到时长（毫秒）并初始化裁剪区间 */
-  private onVideoPrepared(durationMs: number): void {
-    if (durationMs > 0 && this.durationSec <= 0) {
+  /** 生效时长（毫秒）：过滤 <1s 的模拟器假值 */
+  private applyDuration(durationMs: number): void {
+    if (durationMs >= 1000 && this.durationSec <= 0) {
       const total = Math.floor(durationMs / 1000);
       this.durationSec = total;
       this.startSec = 0;
       this.endSec = total > 0 ? total : 0;
-      hilog.info(0x0000, TAG, 'video prepared duration=%{public}d ms', durationMs);
+      hilog.info(0x0000, TAG, 'duration applied: %{public}d ms (%{public}d s)', durationMs, total);
     }
+  }
+
+  /** AVPlayer 读时长：等待 initialized 状态再 prepare（直接 prepare 会报 5400102 idle） */
+  private async loadDuration(): Promise<void> {
+    if (this.videoPath === '') {
+      return;
+    }
+    let avPlayer: media.AVPlayer | undefined = undefined;
+    try {
+      avPlayer = await media.createAVPlayer();
+      avPlayer.on('stateChange', async (state: media.AVPlayerState) => {
+        if (state === 'initialized') {
+          await avPlayer?.prepare();
+        } else if (state === 'prepared') {
+          this.applyDuration(avPlayer?.duration ?? 0);
+          try {
+            avPlayer?.release();
+          } catch (e) {
+            hilog.warn(0x0000, TAG, 'release failed %{public}s', (e as Error).message);
+          }
+        }
+      });
+      avPlayer.on('error', (err: BusinessError) => {
+        hilog.error(0x0000, TAG, 'avPlayer error code=%{public}d msg=%{public}s', err.code, err.message);
+      });
+      avPlayer.url = `file://${this.videoPath}`;
+    } catch (err) {
+      const e = err as BusinessError;
+      hilog.error(0x0000, TAG, 'loadDuration failed code=%{public}d msg=%{public}s', e.code, e.message);
+    }
+  }
+
+  /** Video 组件兜底：准备完成事件（模拟器 duration 可能返回假值，过滤） */
+  private onVideoPrepared(durationMs: number): void {
+    this.applyDuration(durationMs);
   }
 
   private fmt(sec: number): string {
