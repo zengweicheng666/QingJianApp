@@ -1,0 +1,341 @@
+﻿> hvigor [32mUP-TO-DATE :entry:default@PreBuild...  [39m
+> hvigor [32mFinished :entry:default@CreateModuleInfo... after 1 ms [39m
+> hvigor [32mUP-TO-DATE :entry:default@GenerateMetadata...  [39m
+> hvigor [32mFinished :entry:default@ConfigureCmake... after 1 ms [39m
+> hvigor [32mUP-TO-DATE :entry:default@MergeProfile...  [39m
+> hvigor [32mUP-TO-DATE :entry:default@CreateBuildProfile...  [39m
+> hvigor [32mFinished :entry:default@PreCheckSyscap... after 1 ms [39m
+> hvigor [32mUP-TO-DATE :entry:default@GeneratePkgContextInfo...  [39m
+> hvigor [32mFinished :entry:default@GeneratePkgSdkInfo... after 2 ms [39m
+> hvigor [32mFinished :entry:default@ProcessIntegratedHsp... after 1 ms [39m
+> hvigor [32mFinished :entry:default@BuildNativeWithCmake... after 1 ms [39m
+> hvigor [32mUP-TO-DATE :entry:default@MakePackInfo...  [39m
+> hvigor [32mFinished :entry:default@SyscapTransform... after 9 ms [39m
+> hvigor [32mUP-TO-DATE :entry:default@ProcessProfile...  [39m
+> hvigor [32mUP-TO-DATE :entry:default@ProcessRouterMap...  [39m
+> hvigor [32mUP-TO-DATE :entry:default@ProcessShareConfig...  [39m
+> hvigor [32mFinished :entry:default@ProcessStartupConfig... after 2 ms [39m
+> hvigor [32mFinished :entry:default@BuildNativeWithNinja... after 1 ms [39m
+> hvigor [32mUP-TO-DATE :entry:default@ProcessResource...  [39m
+> hvigor [32mUP-TO-DATE :entry:default@GenerateLoaderJson...  [39m
+> hvigor [32mUP-TO-DATE :entry:default@ProcessLibs...  [39m
+> hvigor [32mUP-TO-DATE :entry:default@CompileResource...  [39m
+> hvigor [32mUP-TO-DATE :entry:default@DoNativeStrip...  [39m
+> hvigor [32mFinished :entry:default@BuildJS... after 2 ms [39m
+> hvigor [32mUP-TO-DATE :entry:default@CacheNativeLibs...  [39m
+hvigorw.bat : > hvigor [33mWARN: [33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/ser
+vices/CameraService.ets:67:43
+所在位置 行:1 字符: 167
++ ... ngJianApp"; & "D:\Soft\Huawei\DevEcoStudio\tools\hvigor\bin\hvigorw.b ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (> hvigor [33mW...rvice.ets:67:43:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+ Function may throw exceptions. Special handling is required.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/services/CameraService.ets:68:28
+ Function may throw exceptions. Special handling is required.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/services/CameraService.ets:76:45
+ Function may throw exceptions. Special handling is required.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/services/CameraService.ets:79:29
+ The system capacity of this api 'media' is not supported on all devices
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/services/CameraService.ets:79:35
+ Function may throw exceptions. Special handling is required.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/services/CameraService.ets:81:35
+ Function may throw exceptions. Special handling is required.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/services/CameraService.ets:86:24
+ The system capacity of this api 'media' is not supported on all devices
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/services/CameraService.ets:87:24
+ The system capacity of this api 'media' is not supported on all devices
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/services/CameraService.ets:91:21
+ The system capacity of this api 'media' is not supported on all devices
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/services/CameraService.ets:93:21
+ The system capacity of this api 'media' is not supported on all devices
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/services/CameraService.ets:95:21
+ The system capacity of this api 'media' is not supported on all devices
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/services/CameraService.ets:104:27
+ To use this API, you need to apply for the permissions: ohos.permission.MICROPHONE
+This permission is required only if audio recording is involved. [since 12]
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/services/CameraService.ets:104:27
+ Function may throw exceptions. Special handling is required.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/services/CameraService.ets:105:56
+ Function may throw exceptions. Special handling is required.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/services/CameraService.ets:106:43
+ Function may throw exceptions. Special handling is required.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/services/CameraService.ets:109:32
+ 'createImageReceiver' has been deprecated.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/services/CameraService.ets:112:43
+ 'createPhotoOutput' has been deprecated.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/services/CameraService.ets:112:43
+ Function may throw exceptions. Special handling is required.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/services/CameraService.ets:115:39
+ 'createCaptureSession' has been deprecated.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/services/CameraService.ets:115:39
+ Function may throw exceptions. Special handling is required.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/services/CameraService.ets:116:18
+ 'addInput' has been deprecated.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/services/CameraService.ets:116:18
+ Function may throw exceptions. Special handling is required.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/services/CameraService.ets:117:18
+ 'addOutput' has been deprecated.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/services/CameraService.ets:117:18
+ Function may throw exceptions. Special handling is required.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/services/CameraService.ets:118:18
+ 'addOutput' has been deprecated.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/services/CameraService.ets:118:18
+ Function may throw exceptions. Special handling is required.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/services/CameraService.ets:119:18
+ 'addOutput' has been deprecated.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/services/CameraService.ets:119:18
+ Function may throw exceptions. Special handling is required.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/services/CameraService.ets:120:24
+ 'commitConfig' has been deprecated.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/services/CameraService.ets:120:24
+ Function may throw exceptions. Special handling is required.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/services/CameraService.ets:121:24
+ 'start' has been deprecated.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/services/CameraService.ets:121:24
+ Function may throw exceptions. Special handling is required.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/services/CameraService.ets:209:24
+ 'hasFlash' has been deprecated.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/services/CameraService.ets:209:51
+ 'isFlashModeSupported' has been deprecated.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/services/CameraService.ets:210:22
+ 'setFlashMode' has been deprecated.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/services/CameraService.ets:232:10
+ Function may throw exceptions. Special handling is required.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/services/CameraService.ets:242:28
+ 'stop' has been deprecated.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/services/CameraService.ets:243:28
+ 'release' has been deprecated.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/pages/Index.ets:31:21
+ 'getContext' has been deprecated.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/pages/Index.ets:81:14
+ 'pushUrl' has been deprecated.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/pages/Index.ets:88:20
+ 'showToast' has been deprecated.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/pages/Index.ets:88:20
+ Function may throw exceptions. Special handling is required.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/pages/Index.ets:99:22
+ 'showToast' has been deprecated.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/pages/Index.ets:99:22
+ Function may throw exceptions. Special handling is required.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/pages/Index.ets:108:24
+ 'showToast' has been deprecated.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/pages/Index.ets:123:20
+ 'showToast' has been deprecated.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/pages/Index.ets:123:20
+ Function may throw exceptions. Special handling is required.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/pages/Index.ets:125:20
+ 'showToast' has been deprecated.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/pages/Index.ets:125:20
+ Function may throw exceptions. Special handling is required.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/pages/Index.ets:146:21
+ 'getContext' has been deprecated.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/pages/Index.ets:155:20
+ 'showToast' has been deprecated.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/pages/Index.ets:155:20
+ Function may throw exceptions. Special handling is required.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/pages/Index.ets:160:12
+ 'pushUrl' has been deprecated.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/utils/FileUtil.ets:16:21
+ 'getContext' has been deprecated.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/utils/FileUtil.ets:17:33
+ Function may throw exceptions. Special handling is required.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/utils/FileUtil.ets:18:33
+ Function may throw exceptions. Special handling is required.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/utils/FileUtil.ets:25:25
+ Function may throw exceptions. Special handling is required.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/utils/FileUtil.ets:29:12
+ Function may throw exceptions. Special handling is required.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/utils/FileUtil.ets:33:10
+ Function may throw exceptions. Special handling is required.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/utils/FileUtil.ets:34:10
+ Function may throw exceptions. Special handling is required.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/pages/AlbumPage.ets:39:20
+ 'showToast' has been deprecated.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/pages/AlbumPage.ets:39:20
+ Function may throw exceptions. Special handling is required.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/pages/AlbumPage.ets:60:20
+ 'showToast' has been deprecated.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/pages/AlbumPage.ets:60:20
+ Function may throw exceptions. Special handling is required.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/pages/AlbumPage.ets:70:12
+ 'pushUrl' has been deprecated.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/pages/AlbumPage.ets:83:12
+ 'pushUrl' has been deprecated.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/pages/AlbumPage.ets:97:12
+ 'pushUrl' has been deprecated.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/pages/AlbumPage.ets:111:12
+ 'pushUrl' has been deprecated.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/pages/AlbumPage.ets:125:12
+ 'pushUrl' has been deprecated.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/pages/AlbumPage.ets:190:18
+ 'back' has been deprecated.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/pages/EditPage.ets:24:27
+ 'getParams' has been deprecated.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/pages/EditPage.ets:37:46
+ The system capacity of this api 'media' is not supported on all devices
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/pages/EditPage.ets:76:12
+ 'pushUrl' has been deprecated.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/pages/EditPage.ets:198:18
+ 'pushUrl' has been deprecated.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/pages/EditPage.ets:204:18
+ 'back' has been deprecated.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/pages/ExportPage.ets:36:27
+ 'getParams' has been deprecated.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/pages/ExportPage.ets:62:20
+ 'showToast' has been deprecated.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/pages/ExportPage.ets:62:20
+ Function may throw exceptions. Special handling is required.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/pages/ExportPage.ets:76:20
+ 'getContext' has been deprecated.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/pages/ExportPage.ets:97:20
+ 'showToast' has been deprecated.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/pages/ExportPage.ets:110:20
+ 'showToast' has been deprecated.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/pages/ExportPage.ets:110:20
+ Function may throw exceptions. Special handling is required.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/pages/ExportPage.ets:122:23
+ 'getContext' has been deprecated.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/pages/ExportPage.ets:125:22
+ 'showToast' has been deprecated.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/pages/ExportPage.ets:132:20
+ 'showToast' has been deprecated.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/pages/ExportPage.ets:137:20
+ 'showToast' has been deprecated.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/pages/ExportPage.ets:137:20
+ Function may throw exceptions. Special handling is required.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/pages/ExportPage.ets:223:18
+ 'back' has been deprecated.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/pages/ClipMergePage.ets:38:20
+ 'showToast' has been deprecated.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/pages/ClipMergePage.ets:42:20
+ 'showToast' has been deprecated.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/pages/ClipMergePage.ets:42:20
+ Function may throw exceptions. Special handling is required.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/pages/ClipMergePage.ets:60:20
+ 'showToast' has been deprecated.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/pages/ClipMergePage.ets:64:20
+ 'showToast' has been deprecated.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/pages/ClipMergePage.ets:64:20
+ Function may throw exceptions. Special handling is required.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/pages/ClipMergePage.ets:97:20
+ 'showToast' has been deprecated.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/pages/ClipMergePage.ets:97:20
+ Function may throw exceptions. Special handling is required.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/pages/ClipMergePage.ets:100:12
+ 'pushUrl' has been deprecated.
+[39m[39m
+[33mWARN: [33m[33mArkTS:WARN File: D:/Work-HMOS/QingJianApp/entry/src/main/ets/pages/ClipMergePage.ets:191:18
+ 'back' has been deprecated.
+[39m[39m
+[39m
+> hvigor [32mFinished :entry:default@CompileArkTS... after 3 s 322 ms [39m
+> hvigor [32mUP-TO-DATE :entry:default@GeneratePkgModuleJson...  [39m
+> hvigor [32mFinished :entry:default@ProcessCompiledResources... after 1 ms [39m
+> hvigor [32mFinished :entry:default@PackageHap... after 410 ms [39m
+> hvigor [32mFinished :entry:default@PackingCheck... after 2 ms [39m
+> hvigor [33mWARN: Will skip sign 'hos_hap'. No signingConfigs profile is configured in current project.
+             If needed, configure the signingConfigs in D:\Work-HMOS\QingJianApp\build-profile.json5.[39m
+> hvigor [32mFinished :entry:default@SignHap... after 1 ms [39m
+> hvigor [32mFinished :entry:default@CollectDebugSymbol... after 1 ms [39m
+> hvigor [32mFinished :entry:assembleHap... after 1 ms [39m
+> hvigor [32mBUILD SUCCESSFUL in 6 s 479 ms [39m
+
+33 tasks in total: 17 executed, 16 up-to-date

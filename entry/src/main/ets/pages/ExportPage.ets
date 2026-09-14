@@ -29,6 +29,8 @@ struct ExportPage {
   @State mode: string = 'clip';
   @State clipPaths: Array<string> = [];
   @State speed: number = 1;
+  @State imagePath: string = '';
+  @State imageDurSec: number = 3;
 
   aboutToAppear(): void {
     const params = router.getParams() as Record<string, number | string | Array<string>>;
@@ -36,6 +38,8 @@ struct ExportPage {
       this.mode = (params.mode as string) ?? 'clip';
       if (this.mode === 'concat') {
         this.clipPaths = (params.clipPaths as Array<string>) ?? [];
+      } else if (this.mode === 'image') {
+        this.imagePath = (params.imagePath as string) ?? '';
       } else {
         this.videoPath = (params.videoPath as string) ?? '';
         this.startSec = (params.startSec as number) ?? 0;
@@ -58,7 +62,10 @@ struct ExportPage {
       promptAction.showToast({ message: '拼接至少需要 2 段视频' });
       return;
     }
-    if (this.mode !== 'concat' && this.videoPath === '') {
+    if (this.mode === 'image' && this.imagePath === '') {
+      return;
+    }
+    if (this.mode !== 'concat' && this.mode !== 'image' && this.videoPath === '') {
       return;
     }
     this.exporting = true;
@@ -69,6 +76,9 @@ struct ExportPage {
       outPath = `${getContext(this).filesDir}/qingjian_out_${Date.now()}.mp4`;
       if (this.mode === 'concat') {
         await VideoProcessor.concatFilter(this.clipPaths, outPath,
+          (p: number) => this.progress = p);
+      } else if (this.mode === 'image') {
+        await VideoProcessor.imageToVideo(this.imagePath, this.imageDurSec, outPath,
           (p: number) => this.progress = p);
       } else if (this.speed !== 1) {
         await VideoProcessor.speed(this.videoPath, this.speed, outPath,
@@ -139,6 +149,10 @@ struct ExportPage {
         Text(`拼接 ${this.clipPaths.length} 段视频`)
           .fontSize(14)
           .fontColor('#334')
+      } else if (this.mode === 'image') {
+        Text(`图片转视频（${this.imageDurSec} 秒，720p）`)
+          .fontSize(14)
+          .fontColor('#334')
       } else if (this.videoPath !== '') {
         Text(this.speed !== 1 ? `倍速 ${this.speed}x` :
           (this.useCompress ? '压缩/转码' : `裁剪 ${this.startSec}s → ${this.endSec}s`))
@@ -150,29 +164,31 @@ struct ExportPage {
           .fontColor('#889')
       }
 
-      // 压缩预设选项
-      Row({ space: 18 }) {
-        Text('压缩预设：')
-          .fontSize(14)
-        Radio({ value: '480p', group: 'preset' })
-          .checked(this.preset === '480p')
-          .onChange(() => this.preset = '480p')
-        Text('480p')
-          .fontSize(14)
-        Radio({ value: '720p', group: 'preset' })
-          .checked(this.preset === '720p')
-          .onChange(() => this.preset = '720p')
-        Text('720p')
-          .fontSize(14)
-        Radio({ value: '1080p', group: 'preset' })
-          .checked(this.preset === '1080p')
-          .onChange(() => this.preset = '1080p')
-        Text('1080p')
-          .fontSize(14)
+      // 压缩预设选项（image 模式不显示）
+      if (this.mode !== 'image') {
+        Row({ space: 18 }) {
+          Text('压缩预设：')
+            .fontSize(14)
+          Radio({ value: '480p', group: 'preset' })
+            .checked(this.preset === '480p')
+            .onChange(() => this.preset = '480p')
+          Text('480p')
+            .fontSize(14)
+          Radio({ value: '720p', group: 'preset' })
+            .checked(this.preset === '720p')
+            .onChange(() => this.preset = '720p')
+          Text('720p')
+            .fontSize(14)
+          Radio({ value: '1080p', group: 'preset' })
+            .checked(this.preset === '1080p')
+            .onChange(() => this.preset = '1080p')
+          Text('1080p')
+            .fontSize(14)
+        }
+        .justifyContent(FlexAlign.Center)
       }
-      .justifyContent(FlexAlign.Center)
 
-      if (this.mode !== 'compress') {
+      if (this.mode !== 'compress' && this.mode !== 'image') {
         Row({ space: 8 }) {
           Checkbox({ name: 'useCompress', group: 'exportGroup' })
             .select(this.useCompress)
@@ -193,7 +209,7 @@ struct ExportPage {
 
       Button(this.exporting ? '处理中...' : '开始导出')
         .width(240)
-        .enabled(!this.exporting && this.videoPath !== '')
+        .enabled(!this.exporting && (this.videoPath !== '' || this.mode === 'image'))
         .onClick(() => this.startExport())
 
       Button('保存到相册')

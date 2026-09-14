@@ -4,8 +4,9 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 const TAG = 'QingJian';
 
 /**
- * 文件工具：相册 uri（file://media/...）→ 应用沙箱文件拷贝。
- * ffmpeg NAPI 只认真实文件路径，媒体库 uri 必须先落到沙箱。
+ * 文件工具：媒体 uri（相册 file://media/... 或文件管理 file://docs/...）→ 应用沙箱文件拷贝。
+ * ffmpeg NAPI 只认真实文件路径，选择器返回的 uri 必须先落到沙箱。
+ * fs.openSync 同时支持 media 与 docs 两种 file:// uri（SAF 授权后可直接读）。
  */
 export class FileUtil {
   /** 将相册 uri 拷贝到沙箱，返回沙箱路径 */

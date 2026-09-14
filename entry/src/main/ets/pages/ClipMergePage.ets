@@ -1,6 +1,6 @@
 import { router } from '@kit.ArkUI';
-import { common } from '@kit.AbilityKit';
 import { photoAccessHelper } from '@kit.MediaLibraryKit';
+import { picker } from '@kit.CoreFileKit';
 import { BusinessError } from '@kit.BasicServicesKit';
 import { promptAction } from '@kit.ArkUI';
 import { hilog } from '@kit.PerformanceAnalysisKit';
@@ -8,9 +8,12 @@ import { FileUtil } from '../utils/FileUtil';
 
 const TAG = 'QingJian';
 
+/** 文件管理可选的视频后缀 */
+const VIDEO_SUFFIXES: Array<string> = ['.mp4', '.mov', '.3gp', '.mkv', '.webm', '.avi'];
+
 /**
  * 拼接页（D5）：片段列表管理（添加/删除/排序）+ 拼接导出入口。
- * 添加：系统相册选择视频（PhotoViewPicker）→ 拷贝到沙箱 → 加入列表。
+ * 添加：相册（PhotoViewPicker）/ 文件管理（DocumentViewPicker，E6）→ 拷贝到沙箱 → 加入列表。
  * 导出：跳转 ExportPage（mode=concat），由 ffmpeg filter_complex 统一转码拼接。
  */
 @Entry
@@ -21,12 +24,11 @@ struct ClipMergePage {
   /** 从系统相册选一个视频加入列表 */
   private async addClip(): Promise<void> {
     try {
-      const context = getContext(this) as common.UIAbilityContext;
-      const picker = new photoAccessHelper.PhotoViewPicker();
+      const pickerHelper = new photoAccessHelper.PhotoViewPicker();
       const options = new photoAccessHelper.PhotoSelectOptions();
       options.MIMEType = photoAccessHelper.PhotoViewMIMETypes.VIDEO_TYPE;
       options.maxSelectNumber = 1;
-      const res = await picker.select(options);
+      const res = await pickerHelper.select(options);
       const uris = res.photoUris;
       if (uris === undefined || uris.length === 0) {
         return;
@@ -37,6 +39,28 @@ struct ClipMergePage {
     } catch (err) {
       const e = err as BusinessError;
       hilog.error(0x0000, TAG, 'addClip failed code=%{public}d msg=%{public}s', e.code, e.message);
+      promptAction.showToast({ message: '添加片段失败' });
+    }
+  }
+
+  /** 从文件管理"我的手机"选一个视频加入列表（E6） */
+  private async addClipFromFile(): Promise<void> {
+    try {
+      const documentPicker = new picker.DocumentViewPicker();
+      const options = new picker.DocumentSelectOptions();
+      options.maxSelectNumber = 1;
+      options.fileSuffixFilters = VIDEO_SUFFIXES;
+      // API 26：select() 直接返回 uri 数组（string[]）
+      const uris: Array<string> = await documentPicker.select(options);
+      if (uris === undefined || uris.length === 0) {
+        return;
+      }
+      const path = FileUtil.copyUriToSandbox(uris[0], this.clips.length);
+      this.clips.push(path);
+      promptAction.showToast({ message: `已添加第 ${this.clips.length} 段` });
+    } catch (err) {
+      const e = err as BusinessError;
+      hilog.error(0x0000, TAG, 'addClipFromFile failed code=%{public}d msg=%{public}s', e.code, e.message);
       promptAction.showToast({ message: '添加片段失败' });
     }
   }
@@ -91,12 +115,18 @@ struct ClipMergePage {
         .fontWeight(FontWeight.Bold)
         .margin({ top: 16 })
 
-      Button('添加片段（从相册选择）')
+      Button('添加片段（相册）')
         .width(260)
         .onClick(() => this.addClip())
 
+      Button('添加片段（文件管理）')
+        .width(260)
+        .type(ButtonType.Capsule)
+        .backgroundColor('#0b57a4')
+        .onClick(() => this.addClipFromFile())
+
       if (this.clips.length === 0) {
-        Text('暂无片段\n点击上方按钮从相册选择视频（至少 2 段）')
+        Text('暂无片段\n从相册或文件管理选择视频（至少 2 段）')
           .fontSize(13)
           .fontColor('#889')
           .textAlign(TextAlign.Center)

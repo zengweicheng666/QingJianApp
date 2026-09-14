@@ -172,6 +172,26 @@ export class VideoProcessor {
     return VideoProcessor.execute(args, onProgress);
   }
 
+  /**
+   * 图片转短视频（E6：文件管理图片素材）：单张图片循环 3 秒 → 720p 视频。
+   */
+  static imageToVideo(imagePath: string, durSec: number, output: string,
+    onProgress?: ProgressCallback): Promise<void> {
+    const dur = Math.max(1, Math.min(10, durSec));
+    const args: Array<string> = [
+      '-y',
+      '-loop', '1',
+      '-t', dur.toFixed(2),
+      '-i', imagePath,
+      '-vf', 'scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2,setsar=1',
+      '-c:v', 'libx264',
+      '-preset', 'veryfast',
+      '-movflags', '+faststart',
+      output
+    ];
+    return VideoProcessor.execute(args, onProgress);
+  }
+
   /** 拼接（concat demuxer，要求各段编码一致；不一致时先转码统一） */
   static concat(listFilePath: string, output: string, onProgress?: ProgressCallback): Promise<void> {
     const args: Array<string> = [

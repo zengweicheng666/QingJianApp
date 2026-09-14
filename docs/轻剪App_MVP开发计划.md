@@ -30,8 +30,10 @@
 | E3 相册页真实选片（替换 D2 占位）+ 双入口（编辑 / 直接压缩） | ✅ 已实现 |
 | E4 公共文件工具 FileUtil（uri→沙箱拷贝，剪辑/相册/拼接共用） | ✅ 已实现 |
 | E5 视频滤镜 / 转场 / 水印 | ⬜ 待开发 |
+| E6 素材来源扩展：文件管理「我的手机」视频/图片（DocumentViewPicker 免权限；图片→3s 视频导出；拼接页同步支持文件添加） | ✅ 已实现（2026-09-14，git 已提交） |
 
 > ⚠️ D3 依赖：真机编译前需在 `entry` 目录执行 `ohpm install @ohos/ffmpeg-kit`。
+> 📌 E6 技术要点：API 26 的 `DocumentViewPicker.select()` 直接返回 `string[]`（uri 数组，无 fileUris 字段）；`fs.openSync` 同时支持 `file://media` 与 `file://docs` uri，FileUtil 无需改动。
 
 ## 1. 项目概述
 
