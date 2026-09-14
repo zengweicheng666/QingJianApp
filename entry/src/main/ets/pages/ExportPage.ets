@@ -58,8 +58,9 @@ struct ExportPage {
     this.exporting = true;
     this.progress = 0;
     this.statusText = '处理中...';
+    let outPath = '';
     try {
-      const outPath = `${getContext(this).filesDir}/qingjian_out_${Date.now()}.mp4`;
+      outPath = `${getContext(this).filesDir}/qingjian_out_${Date.now()}.mp4`;
       if (this.mode === 'concat') {
         await VideoProcessor.concatFilter(this.clipPaths, outPath,
           (p: number) => this.progress = p);
@@ -72,11 +73,20 @@ struct ExportPage {
           (p: number) => this.progress = p);
       }
       this.outputPath = outPath;
-      this.statusText = '处理完成';
+      const sizeMB = (fs.statSync(outPath).size / (1024 * 1024)).toFixed(1);
+      this.statusText = `处理完成（${sizeMB} MB）`;
       promptAction.showToast({ message: '处理完成，点击保存到相册' });
     } catch (err) {
       const e = err as BusinessError;
       hilog.error(0x0000, TAG, 'export failed %{public}s', e.message);
+      // 失败时清理半成品输出，避免残留垃圾文件
+      if (outPath !== '') {
+        try {
+          fs.unlinkSync(outPath);
+        } catch (cleanErr) {
+          hilog.warn(0x0000, TAG, 'clean output failed %{public}s', (cleanErr as Error).message);
+        }
+      }
       this.statusText = `处理失败：${e.message}`;
       promptAction.showToast({ message: '处理失败，请重试' });
     } finally {
